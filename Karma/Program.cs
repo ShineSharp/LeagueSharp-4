@@ -43,7 +43,7 @@ namespace Karma
                 return;
             }
 
-            _q = new Spell(SpellSlot.Q, 1050f);
+            _q = new Spell(SpellSlot.Q, 950f);
             _w = new Spell(SpellSlot.W, 700f);
             _e = new Spell(SpellSlot.E, 800f);
             _r = new Spell(SpellSlot.R);
@@ -152,10 +152,13 @@ namespace Karma
 
             foreach (var spell in SpellList)
             {
-                menuItem = _config.Item(spell.Slot + "Range").GetValue<Circle>();
-                if (menuItem.Active)
-                {
-                    Render.Circle.DrawCircle(ObjectManager.Player.Position, spell.Range, menuItem.Color);
+                var item = _config.Item(spell.Slot + "Range");
+                if(item != null) {
+                    menuItem = item.GetValue<Circle>();
+                    if (menuItem.Active)
+                    {
+                        Render.Circle.DrawCircle(ObjectManager.Player.Position, spell.Range, menuItem.Color);
+                    }
                 }
             }
         }

@@ -126,6 +126,9 @@ namespace Evade
         {
             PlayerChampionName = ObjectManager.Player.ChampionName;
 
+            //Create the menu to allow the user to change the config.
+            Config.CreateMenu();
+            
             //Add the game events.
             Game.OnUpdate += Game_OnOnGameUpdate;
             Obj_AI_Hero.OnIssueOrder += ObjAiHeroOnOnIssueOrder;
@@ -142,14 +145,9 @@ namespace Evade
 
             DetectedSkillshots.OnAdd += DetectedSkillshots_OnAdd;
 
-            //Create the menu to allow the user to change the config.
-            Config.CreateMenu();
-
             //Initialze the collision
             Collision.Init();
 
-            Game.PrintChat("Evade Loaded");
-            
             if (Config.PrintSpellData)
             {
                 foreach (var hero in ObjectManager.Get<Obj_AI_Hero>())
@@ -286,6 +284,24 @@ namespace Evade
                         return;
                     }
 
+                    if (skillshot.SpellData.SpellName == "TaricE" && (skillshot.Unit as Obj_AI_Hero).ChampionName == "Taric")
+                    {
+                        var target = HeroManager.AllHeroes.FirstOrDefault(h => h.Team == skillshot.Unit.Team && h.IsVisible && h.HasBuff("taricwleashactive"));
+                        if (target != null)
+                        {
+                            var start = target.ServerPosition.To2D();
+                            var direction = (skillshot.OriginalEnd - start).Normalized();
+                            var end = start + direction * skillshot.SpellData.Range;
+                            var skillshotToAdd = new Skillshot(
+                                    skillshot.DetectionType, skillshot.SpellData, skillshot.StartTick,
+                                    start, end, target)
+                            {
+                              OriginalEnd = skillshot.OriginalEnd
+                            };
+                            DetectedSkillshots.Add(skillshotToAdd);
+                        }
+                    }
+
                     if (skillshot.SpellData.SpellName == "SyndraE" || skillshot.SpellData.SpellName == "syndrae5")
                     {
                         var angle = 60;
@@ -335,10 +351,21 @@ namespace Evade
                         return;
                     }
 
-                    if (skillshot.SpellData.SpellName == "AlZaharCalloftheVoid")
+                    if (skillshot.SpellData.SpellName == "MalzaharQ")
                     {
                         var start = skillshot.End - skillshot.Direction.Perpendicular() * 400;
                         var end = skillshot.End + skillshot.Direction.Perpendicular() * 400;
+                        var skillshotToAdd = new Skillshot(
+                            skillshot.DetectionType, skillshot.SpellData, skillshot.StartTick, start, end,
+                            skillshot.Unit);
+                        DetectedSkillshots.Add(skillshotToAdd);
+                        return;
+                    }
+
+                    if (skillshot.SpellData.SpellName == "ZyraQ")
+                    {
+                        var start = skillshot.End - skillshot.Direction.Perpendicular() * 450;
+                        var end = skillshot.End + skillshot.Direction.Perpendicular() * 450;
                         var skillshotToAdd = new Skillshot(
                             skillshot.DetectionType, skillshot.SpellData, skillshot.StartTick, start, end,
                             skillshot.Unit);
